@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, Typography, Box, IconButton, Avatar } from '@mui/material';
+import { Typography, Box, Avatar } from '@mui/material';
 import { ClickAwayListener } from '@mui/material';
 import Grow from '@mui/material/Grow';
 import Paper from '@mui/material/Paper';
@@ -11,21 +11,19 @@ import { textStylesBody1, textStylesBodyL2, textStylesH4 } from '../../pages/Sty
 import {ReactComponent as Avatar1 } from "../../assets/avatars/avatar1.svg";
 import { ReactComponent as LogOut } from "../../assets/icons/log-out.svg";
 import { Divider } from '@mui/material';
-// import { useDispatch } from 'react-redux';
-// import { logoutUser } from '../../store/store';
-import { persistor } from '../../store/store';
+import { useDispatch } from 'react-redux';
+import {logoutUser}  from '../../store/Slice/authSlice';
 import { Link, useNavigate } from 'react-router-dom';
 
 const UserDropdown = ({name, lastName, email}) => {
-    // const dispatch = useDispatch();
+    const dispatch = useDispatch();
     const navigate =useNavigate();
     const [open, setOpen] = React.useState(false);
     const anchorRef = React.useRef(null);
     
     const handleLogout = () => {
-      // dispatch(logoutUser());
-      persistor.purge(); 
-      navigate('/')
+      dispatch(logoutUser());
+      navigate('/login')
     };
 
     const handleToggle = () => {
@@ -57,7 +55,6 @@ const UserDropdown = ({name, lastName, email}) => {
   
     return (
       <Stack direction="row" spacing={2} sx={{zIndex:1100}}>
-    
         <div>
           <Box
             ref={anchorRef}
@@ -111,41 +108,111 @@ const UserDropdown = ({name, lastName, email}) => {
                       onKeyDown={handleListKeyDown}
                       sx={{ width: '330px', height: '407px'}}
                     >
-                     <MenuItem onClick={handleClose} sx={{ width: 'auto', height: '70px', margin:'24px', padding:'0', 
+                     <MenuItem 
+                     onClick={handleClose} 
+                     sx={{ 
+                      width: 'auto', 
+                      height: '70px', 
+                      margin:'24px', 
+                      padding:'0', 
                      '&.Mui-focusVisible': { backgroundColor:  'transparent'} }}>
-                      <Avatar sx={{ width: 70, height: 70, borderColor: '#FFFFFF', marginRight: '16px' }}>
+                      <Avatar sx={{ 
+                        width: 70, 
+                        height: 70, 
+                        borderColor: '#FFFFFF', 
+                        marginRight: '16px' }}>
                         <Avatar1 width="100%" height="100%" />
                       </Avatar>
                       <Box>
-                        <Typography sx={{ ...textStylesBody1, fontSize: '18px', color: 'black', paddingBottom:'4px' }}>
+                        <Typography sx={{ 
+                          ...textStylesBody1, 
+                          fontSize: '18px', 
+                          color: 'black', 
+                          paddingBottom:'4px' }}>
                           {name} {lastName}
                         </Typography>
-                        <Typography sx={{ ...textStylesBody1, fontSize: '16px', color: '#475467' }}>
+                        <Typography sx={{ 
+                          ...textStylesBody1, 
+                          fontSize: '16px', 
+                          color: '#475467' }}>
                           {email}
                         </Typography>
                       </Box>
                      </MenuItem>
 
-                      <MenuItem onClick={handleClose} component={Link}  to="/profile" sx={{...textStylesBody1,  width: '228px', height: '63px', 
-                        margin:'0 24px', padding:'16px 10px', '&:hover': {backgroundColor: '#E2D5FF', borderRadius:'8px' }}}
+                      <MenuItem 
+                      onClick={handleClose} 
+                      component={Link}  
+                      to="/profile" 
+                      sx={{
+                        ...textStylesBody1,  
+                        width: '228px', 
+                        height: '63px', 
+                        margin:'0 24px', 
+                        padding:'16px 10px', 
+                        '&:hover': {backgroundColor: '#E2D5FF', borderRadius:'8px' }}}
                       >
                           Profile
                       </MenuItem>
-                      <MenuItem onClick={handleClose} component={Link} to="/settings" sx={{...textStylesBody1,  width: '228px', height: '63px', 
-                        margin:'4px 24px', padding:'16px 10px', '&:hover': {backgroundColor: '#E2D5FF', borderRadius:'8px' }}}
+                      <MenuItem 
+                      onClick={handleClose} 
+                      component={Link} 
+                      to="/settings" 
+                      sx={{
+                        ...textStylesBody1,  
+                        width: '228px', 
+                        height: '63px', 
+                        margin:'4px 24px', 
+                        padding:'16px 10px', 
+                        '&:hover': {backgroundColor: '#E2D5FF', borderRadius:'8px' }}}
                       >
                           Settings
                       </MenuItem>
-                      <MenuItem onClick={handleClose} component={Link} to="/helpCenter" sx={{...textStylesBody1,  width: '228px', height: '63px',
-                         margin:'0 24px 4px 24px', padding:'16px  10px','&:hover': {backgroundColor: '#E2D5FF', borderRadius:'8px' }}}
+                      <MenuItem 
+                      onClick={handleClose} 
+                      component={Link} 
+                      to="/helpCenter" 
+                      sx={{
+                        ...textStylesBody1,  
+                        width: '228px', 
+                        height: '63px',
+                        margin:'0 24px 4px 24px', 
+                        padding:'16px  10px',
+                        '&:hover': {backgroundColor: '#E2D5FF', borderRadius:'8px' }}}
                       >
-                          Help Center
+                        Help Center
                       </MenuItem>
                       <Divider 
-                        sx={{ margin: '0 24px', borderColor: '#D0D5DD' }} 
+                        sx={{ 
+                          margin: '0 24px', 
+                          borderColor: '#D0D5DD' }} 
                         />
-                      <MenuItem  onClick={handleClose} sx={{ margin:'0 24px', padding:'16px 10px', width: '228px', height: '60px', '&:hover': {backgroundColor: '#E2D5FF', borderRadius:'8px' }}} >
-                        <Button onClick={handleLogout} sx={{margin:'0', padding:'0', textTransform: 'none'}} >
+                      <MenuItem  
+                      onClick={(e) => {
+                        handleClose(e);
+                        handleLogout();
+                      }} 
+                      sx={{ margin:'0 24px', 
+                      padding:'16px 10px', 
+                      width: '228px', 
+                      height: '60px', 
+                      '&:hover': {backgroundColor: '#E2D5FF', borderRadius:'8px' }
+                      }} 
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <LogOut style={{ width: '24px', height: '24px' }} />
+                        <Typography
+                          sx={{
+                            ...textStylesBodyL2,
+                            fontSize: '18px',
+                            color: '#F04438',
+                            marginLeft: '12px',
+                          }}
+                        >
+                          Log out
+                        </Typography>
+                        </Box>
+                        {/* <Button onClick={handleLogout} sx={{margin:'0', padding:'0', textTransform: 'none'}} >
                           <IconButton>
                             <LogOut style={{ width: '24px', height: '24px' }} />
                           </IconButton>
@@ -153,7 +220,7 @@ const UserDropdown = ({name, lastName, email}) => {
                             color:'#F04438', textTransform: 'none', marginLeft:'12px'}}>
                               Log out
                           </Box>
-                        </Button>
+                        </Button> */}
                       </MenuItem>
                     </MenuList>
                   </ClickAwayListener>

@@ -2,29 +2,35 @@ import axios from 'axios';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { API_URL } from '../../config';
 
-export const loginUser = createAsyncThunk(
-  'auth/loginUser',
-  async (credentials, { rejectWithValue }) => {
-    try {
-      const response = await axios.post(`${API_URL}/auth/local`, credentials);
-      const { jwt, user } = response.data;
-      localStorage.setItem('jwt', jwt);
-      return { user, token: jwt };
-    } catch (error) {
-      console.error('Login API Error:', error.response?.data || error.message);
-      return rejectWithValue(error.response?.data?.error?.message || error.message || 'Login failed');
+export const loginUser = createAsyncThunk('auth/loginUser', async (credentials, { rejectWithValue }) => {
+  try {
+    const response = await fetch('http://localhost:1337/api/auth/local', { // Исправлен URL
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        identifier: credentials.identifier,
+        password: credentials.password,
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      return rejectWithValue(data.message || 'Login failed');
     }
+    return data;
+  } catch (error) {
+    return rejectWithValue(error.message);
   }
-);
+});
 
 export const registerUser = createAsyncThunk(
   'auth/registerUser',
   async (userData, { rejectWithValue }) => {
     try {
       const response = await axios.post(`${API_URL}/api/auth/local/register`, userData);
-      const { jwt, user } = response.data;
-      localStorage.setItem('jwt', jwt);
-      return { user, token: jwt };
+      const { user } = response.data;
+      return { user };
     } catch (error) {
       console.error('Register API Error:', {
         message: error.message,
@@ -48,10 +54,12 @@ const authSlice = createSlice({
   },
   reducers: {
     logoutUser(state) {
+      console.log('Logging out, clearing state and localStorage');
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
-      localStorage.removeItem('jwt');
+      localStorage.removeItem('token');
+      console.log('After logout, token in localStorage:', localStorage.getItem('token'));
     },
     clearError(state) {
       state.error = null;
@@ -64,11 +72,13 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
+        console.log('Login fulfilled, setting isAuthenticated to true');
         state.loading = false;
         state.user = action.payload.user;
         state.token = action.payload.token;
         state.isAuthenticated = true;
         state.error = null;
+        localStorage.setItem('token', action.payload.jwt);
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
@@ -81,8 +91,6 @@ const authSlice = createSlice({
       .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
-        state.token = action.payload.token;
-        state.isAuthenticated = true;
         state.error = null;
       })
       .addCase(registerUser.rejected, (state, action) => {

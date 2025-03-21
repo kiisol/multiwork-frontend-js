@@ -220,12 +220,13 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { loginUser, clearError } from '../store/Slice/authSlice';
 
 const PageLogin = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const { loading, error, isAuthenticated } = useSelector((state) => state.auth);
   const [credentials, setCredentials] = useState({
     identifier: '',
@@ -237,8 +238,17 @@ const PageLogin = () => {
 
 
   useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const confirmed = queryParams.get('confirmed');
+    if (confirmed === 'true') {
+      alert('Email confirmed, please log in!');
+    }
+  }, [location]);
+
+  useEffect(() => {
     if (isAuthenticated) {
-      navigate('/home/:registration');
+      console.log('Navigating to /home because isAuthenticated is true');
+      navigate('/home');
     }
   }, [isAuthenticated, navigate]);
 
@@ -280,7 +290,9 @@ const PageLogin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validate()) {
+      console.log('Submitting login with credentials:', credentials);
       const action = await dispatch(loginUser(credentials));
+      console.log('Login action result:', action);
       if (action.type === 'auth/loginUser/rejected') {
         setErrors((prev) => ({
           ...prev,
